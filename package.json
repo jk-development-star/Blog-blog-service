@@ -8,11 +8,6 @@
     "test": "jest",
     "start": "nodemon index.js"
   },
-   "jest": {
-    "transform": {
-      "^.+\\.[t|j]sx?$": "babel-jest"
-    }
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -31,6 +26,7 @@
     "babel-jest": "^29.7.0",
     "cross-env": "^7.0.3",
     "jest": "^29.7.0",
+    "serverless-offline": "^14.3.2",
     "supertest": "^7.0.0"
   }
 }
