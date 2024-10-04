@@ -1,0 +1,301 @@
+# Project your project
+service: blog-blog-service
+plugins:
+  # - serverless-jetpack
+  # - serverless-prune-plugin
+  - serverless-offline
+custom:
+  apiKeys:
+    - name: APIKey
+  prune:
+    automatic: true
+    number: 1
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: dev
+  stackName: Blog-Blog-Service
+  role: arn:aws:iam::050752626146:role/LambdaS3ExecutionRole
+  memorySize: 1024
+  timeout: 29
+  versionFunctions: false
+  endpointType: regional
+  tracing:
+    lambda: true
+  # deploymentBucket:
+  #   name: deploymentBucket
+  stackTags:
+    environment: dev
+   
+functions:
+  AddNewBlog:
+    handler: handler.addBlog
+    description: Store Service
+    name: add-new-blog
+    # vpc:
+    #   securityGroupIds:
+    #     - securityGroup
+    #   subnetIds:
+    #     - subnetid1
+    #     - subnetid2
+    environment:
+      XRAY_ENABLED: true
+      STAGE: dev
+      DATABASE_URL: mongodb+srv://vishwakarma137:nQc7HjtfDSaB19Db@blog-app.a414a.mongodb.net/?retryWrites=true&w=majority&appName=Blog-App
+      DB_NAME: blogs
+    events:
+      - http:
+          path: api/v1.0/blogsite/blogs
+          method: post
+          private: false
+          cors: true
+          # authorizer:
+          #   name: dev-LambdaAuthorizer
+          #   arn: authorizerArn
+          #   managedExternally: false
+          #   resultTtlInSeconds: 0
+          #   identitySource: method.request.header.Authorization
+          #   identityValidationExpression: Bearer (.*)
+          #   type: token  
+  GetAllBlogs:
+    handler: handler.getBlogs
+    description: Get all blog Service
+    name: get-all-blogs
+    # vpc:
+    #   securityGroupIds:
+    #     - securityGroup
+    #   subnetIds:
+    #     - subnetid1
+    #     - subnetid2
+    environment:
+      XRAY_ENABLED: true
+      STAGE: dev
+      DATABASE_URL: mongodb+srv://vishwakarma137:nQc7HjtfDSaB19Db@blog-app.a414a.mongodb.net/?retryWrites=true&w=majority&appName=Blog-App
+      DB_NAME: blogs
+    events:
+      - http:
+          path: api/v1.0/blogsite/blogs/{userId}
+          method: get
+          private: false
+          cors: true
+          # authorizer:
+          #   name: dev-LambdaAuthorizer
+          #   arn: authorizerArn
+          #   managedExternally: false
+          #   resultTtlInSeconds: 0
+          #   identitySource: method.request.header.Authorization
+          #   identityValidationExpression: Bearer (.*)
+          #   type: token  
+  DeleteBlog:
+    handler: handler.deleteBlog
+    description: Get blog by id Service
+    name: delete-blog
+    # vpc:
+    #   securityGroupIds:
+    #     - securityGroup
+    #   subnetIds:
+    #     - subnetid1
+    #     - subnetid2
+    environment:
+      XRAY_ENABLED: true
+      STAGE: dev
+      DATABASE_URL: mongodb+srv://vishwakarma137:nQc7HjtfDSaB19Db@blog-app.a414a.mongodb.net/?retryWrites=true&w=majority&appName=Blog-App
+      DB_NAME: blogs
+    events:
+      - http:
+          path: api/v1.0/blogsite/blogs/{id}
+          method: delete
+          private: false
+          cors: true
+         
+  GetBlogById:
+    handler: handler.getBlogById
+    description: Get blog by id Service
+    name: get-blog-by-id
+    # vpc:
+    #   securityGroupIds:
+    #     - securityGroup
+    #   subnetIds:
+    #     - subnetid1
+    #     - subnetid2
+    environment:
+      XRAY_ENABLED: true
+      STAGE: dev
+      DATABASE_URL: mongodb+srv://vishwakarma137:nQc7HjtfDSaB19Db@blog-app.a414a.mongodb.net/?retryWrites=true&w=majority&appName=Blog-App
+      DB_NAME: blogs
+    events:
+      - http:
+          path: api/v1.0/blogsite/blogs/{id}
+          method: get
+          private: false
+          cors: true
+          # authorizer:
+          #   name: dev-LambdaAuthorizer
+          #   arn: authorizerArn
+          #   managedExternally: false
+          #   resultTtlInSeconds: 0
+          #   identitySource: method.request.header.Authorization
+          #   identityValidationExpression: Bearer (.*)
+          #   type: token  
+  SearchBlogByCategory:
+    handler: handler.searchBlog
+    description: Search blog service
+    name: search-blog
+    # vpc:
+    #   securityGroupIds:
+    #     - securityGroup
+    #   subnetIds:
+    #     - subnetid1
+    #     - subnetid2
+    environment:
+      XRAY_ENABLED: true
+      STAGE: dev
+      DATABASE_URL: mongodb+srv://vishwakarma137:nQc7HjtfDSaB19Db@blog-app.a414a.mongodb.net/?retryWrites=true&w=majority&appName=Blog-App
+      DB_NAME: blogs
+    events:
+      - http:
+          path: api/v1.0/blogsite/blogs/info/{category}
+          method: get
+          private: false
+          cors: true
+          # authorizer:
+          #   name: dev-LambdaAuthorizer
+          #   arn: authorizerArn
+          #   managedExternally: false
+          #   resultTtlInSeconds: 0
+          #   identitySource: method.request.header.Authorization
+          #   identityValidationExpression: Bearer (.*)
+          #   type: token                        
+# resources:
+#   Resources:
+#     GatewayResponseDefault4XX:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: DEFAULT_4XX
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseDEFAULT5XX:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: DEFAULT_5XX
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseINVALIDAPIKEY:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: INVALID_API_KEY
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseINVALIDSIGNATURE:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: INVALID_SIGNATURE
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseRESOURCENOTFOUND:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: RESOURCE_NOT_FOUND
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseEXPIREDTOKEN:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: EXPIRED_TOKEN
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseMISSINGAUTHENTICATIONTOKEN:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: MISSING_AUTHENTICATION_TOKEN
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseUNAUTHORIZED:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: UNAUTHORIZED
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseACCESSDENIED:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: ACCESS_DENIED
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseUNSUPPORTEDMEDIATYPE:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: UNSUPPORTED_MEDIA_TYPE
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+#     GatewayResponseQUOTAEXCEEDED:
+#       Type: 'AWS::ApiGateway::GatewayResponse'
+#       Properties:
+#         ResponseParameters:
+#           gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
+#           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#           gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+#         ResponseType: QUOTA_EXCEEDED
+#         RestApiId:
+#           Ref: 'ApiGatewayRestApi'
+package:
+  exclude:
+    - coverage/**
+    - test/**
+    - package-lock.json
+    - .npm/**
+    - .idea/**
+ 
+ 
