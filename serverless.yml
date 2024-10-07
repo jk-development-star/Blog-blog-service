@@ -1,289 +1,124 @@
-service: blog-service
+# Project your project
+service: blog-src
 plugins:
-  # - serverless-jetpack
-  # - serverless-prune-plugin
-  - serverless-offline
+  - serverless-jetpack
+  - serverless-prune-plugin
 custom:
   prune:
     automatic: true
     number: 1
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs16.x
   region: us-east-1
   stage: dev
-  stackName: Blog-App-Service
-  role: roleArn
+  stackName: App-dev-blog-service
+  role: arn:aws:iam::050752626146:role/LambdaExecutionRole
   memorySize: 1024
   timeout: 29
   versionFunctions: false
   endpointType: regional
   tracing:
     lambda: true
-  deploymentBucket:
-    name: deploymentBucket
   stackTags:
     environment: dev
-
 functions:
-  AddNewBlog:
-    handler: src/controllers/blogController.addBlog
-    description: Store Service
-    name: add-new-blog
-    vpc:
-      securityGroupIds:
-        - securityGroup
-      subnetIds:
-        - subnetid1
-        - subnetid2
+  FetchBlogFunction:
+    handler: handler.getAllBlogs
+    description: Fetch Service
+    name: App-FetchFunction-dev
     environment:
       XRAY_ENABLED: true
       STAGE: dev
     events:
       - http:
-          path: api/v1.0/blogsite/blogs
+          path: fetchblog
+          method: get
+          private: false
+          cors: 
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
+            methods:
+              - GET
+              - POST
+              - PATCH
+              - PUT
+              - DELETE
+              - OPTIONS       
+  AddBlogFunction:
+    handler: handler.addBlog
+    description: Add Service
+    name: App-Add-Blog-Function-dev
+    environment:
+      XRAY_ENABLED: true
+      STAGE: dev
+      SNS_TOPIC_ARN: arn:aws:sns:us-east-1:050752626146:blog-app-notification
+    events:
+      - http:
+          path: addblog
           method: post
-          private: true
-          cors: true
-          authorizer:
-            name: dev-LambdaAuthorizer
-            arn: authorizerArn
-            managedExternally: false
-            resultTtlInSeconds: 0
-            identitySource: method.request.header.Authorization
-            identityValidationExpression: Bearer (.*)
-            type: token
-  GetAllBlogs:
-    handler: src/controllers/blogController.getBlogs
-    description: Get all blog Service
-    name: get-all-blogs
-    vpc:
-      securityGroupIds:
-        - securityGroup
-      subnetIds:
-        - subnetid1
-        - subnetid2
+          private: false
+          cors: 
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
+            methods:
+              - GET
+              - POST
+              - PATCH
+              - PUT
+              - DELETE
+              - OPTIONS     
+  DeleteBlogFunction:
+    handler: handler.deleteBlog
+    description: Delete Blog Service
+    name: App-Delete-Blog-Function-dev
     environment:
       XRAY_ENABLED: true
       STAGE: dev
     events:
       - http:
-          path: api/v1.0/blogsite/blogs
-          method: get
-          private: true
-          cors: true
-          authorizer:
-            name: dev-LambdaAuthorizer
-            arn: authorizerArn
-            managedExternally: false
-            resultTtlInSeconds: 0
-            identitySource: method.request.header.Authorization
-            identityValidationExpression: Bearer (.*)
-            type: token
-  DeleteBlog:
-    handler: src/controllers/blogController.deleteBlog
-    description: Get blog by id Service
-    name: delete-blog
-    vpc:
-      securityGroupIds:
-        - securityGroup
-      subnetIds:
-        - subnetid1
-        - subnetid2
-    environment:
-      XRAY_ENABLED: true
-      STAGE: dev
-    events:
-      - http:
-          path: api/v1.0/blogsite/blogs/{id}
+          path: deleteblog
           method: delete
-          private: true
-          cors: true
-          authorizer:
-            name: dev-LambdaAuthorizer
-            arn: authorizerArn
-            managedExternally: false
-            resultTtlInSeconds: 0
-            identitySource: method.request.header.Authorization
-            identityValidationExpression: Bearer (.*)
-            type: token
-  GetBlogById:
-    handler: src/controllers/blogController.getBlogById
-    description: Get blog by id Service
-    name: get-blog-by-id
-    vpc:
-      securityGroupIds:
-        - securityGroup
-      subnetIds:
-        - subnetid1
-        - subnetid2
-    environment:
-      XRAY_ENABLED: true
-      STAGE: dev
-    events:
-      - http:
-          path: api/v1.0/blogsite/blogs/{id}
-          method: get
-          private: true
-          cors: true
-          authorizer:
-            name: dev-LambdaAuthorizer
-            arn: authorizerArn
-            managedExternally: false
-            resultTtlInSeconds: 0
-            identitySource: method.request.header.Authorization
-            identityValidationExpression: Bearer (.*)
-            type: token
-  SearchBlogByCategory:
-    handler: src/controllers/blogController.searchBlog
-    description: Search blog service
-    name: search-blog
-    vpc:
-      securityGroupIds:
-        - securityGroup
-      subnetIds:
-        - subnetid1
-        - subnetid2
-    environment:
-      XRAY_ENABLED: true
-      STAGE: dev
-    events:
-      - http:
-          path: api/v1.0/blogsite/blogs/info/{category}
-          method: get
-          private: true
-          cors: true
-          authorizer:
-            name: dev-LambdaAuthorizer
-            arn: authorizerArn
-            managedExternally: false
-            resultTtlInSeconds: 0
-            identitySource: method.request.header.Authorization
-            identityValidationExpression: Bearer (.*)
-            type: token
+          private: false
+          cors: 
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: true
+            methods:
+              - GET
+              - POST
+              - PATCH
+              - PUT
+              - DELETE
+              - OPTIONS    
 resources:
   Resources:
     GatewayResponseDefault4XX:
-      Type: "AWS::ApiGateway::GatewayResponse"
+      Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
         ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Origin, X-Requested-With, Content-Type, Accept, Authorization'"
         ResponseType: DEFAULT_4XX
         RestApiId:
-          Ref: "ApiGatewayRestApi"
+          Ref: 'ApiGatewayRestApi'
     GatewayResponseDEFAULT5XX:
-      Type: "AWS::ApiGateway::GatewayResponse"
+      Type: 'AWS::ApiGateway::GatewayResponse'
       Properties:
         ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Origin, X-Requested-With, Content-Type, Accept, Authorization'"
         ResponseType: DEFAULT_5XX
         RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseINVALIDAPIKEY:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: INVALID_API_KEY
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseINVALIDSIGNATURE:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: INVALID_SIGNATURE
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseRESOURCENOTFOUND:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: RESOURCE_NOT_FOUND
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseEXPIREDTOKEN:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: EXPIRED_TOKEN
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseMISSINGAUTHENTICATIONTOKEN:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: MISSING_AUTHENTICATION_TOKEN
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseUNAUTHORIZED:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: UNAUTHORIZED
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseACCESSDENIED:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: ACCESS_DENIED
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseUNSUPPORTEDMEDIATYPE:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: UNSUPPORTED_MEDIA_TYPE
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
-    GatewayResponseQUOTAEXCEEDED:
-      Type: "AWS::ApiGateway::GatewayResponse"
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Credentials: "'true'"
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,POST,PATCH'"
-        ResponseType: QUOTA_EXCEEDED
-        RestApiId:
-          Ref: "ApiGatewayRestApi"
+          Ref: 'ApiGatewayRestApi'
 package:
   exclude:
     - coverage/**
